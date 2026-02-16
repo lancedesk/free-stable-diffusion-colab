@@ -18,11 +18,3 @@ build/
 
 # Jupyter
 .ipynb_checkpoints/
-
-# Personal files (not for public repo)
-DxDiag.txt
-articles.md
-FEATURED_IMAGE_PROMPTS.md
-image_database.json
-outputs/
-prompts/
