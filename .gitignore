@@ -18,3 +18,4 @@ build/
 
 # Jupyter
 .ipynb_checkpoints/
+events.log
