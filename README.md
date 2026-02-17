@@ -29,6 +29,7 @@ Run [AUTOMATIC1111's Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/st
 | Setting | Value |
 |---------|-------|
 | **Model** | **Realistic Vision V6** |
+| **CLIP Skip** | **2** (critical for this model) |
 | Sampler | DPM++ SDE |
 | Schedule | Karras |
 | Steps | 30 |
@@ -38,9 +39,11 @@ Run [AUTOMATIC1111's Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/st
 | Upscaler | R-ESRGAN 4x+ |
 | Denoising | 0.40 |
 | Batch count | 4 |
-| ADetailer | Enabled (hands & faces) |
+| ADetailer | Enabled (hands + faces) |
+| Face restoration | CodeFormer |
+| Negative prompt | Pre-filled with anti-artifact terms |
 
-All settings are written to `ui-config.json` before launch — the WebUI opens ready to go.
+Settings are enforced through three config files (`config.json`, `ui-config.json`, `params.txt`) before launch — the WebUI opens ready to go.
 
 ## Fixing Hands & Faces
 
@@ -74,6 +77,7 @@ response = requests.post(url, json={
     "negative_prompt": "blurry, low quality, bad anatomy",
     "steps": 30,
     "cfg_scale": 5,
+    "override_settings": {"CLIP_stop_at_last_layers": 2},
     "width": 768,
     "height": 512,
 }).json()
