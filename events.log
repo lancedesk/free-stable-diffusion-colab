@@ -1,0 +1,963 @@
+
+stable_diffusion_colab.ipynb
+stable_diffusion_colab.ipynb_
+🎨 Free Stable Diffusion WebUI on Google Colab
+Run AUTOMATIC1111's Stable Diffusion WebUI for free on Google Colab — no local GPU required.
+
+Open In Colab
+
+Setup (one-time, ~6 minutes total)
+Enable GPU: Runtime → Change runtime type → T4 GPU → Save
+Run Cell 1 — Install dependencies & clone repos (~3-4 min)
+Run Cell 2 — Download SD 1.5 model (~2 min)
+Run Cell 3 — Launch WebUI (~1 min)
+Click the trycloudflare.com URL that appears → start generating!
+What's included
+PyTorch + xformers (CUDA 12.1, optimized for T4)
+ADetailer extension (auto-fixes hands & faces)
+Cloudflare Tunnel (reliable public URL, replaces Gradio's unstable --share)
+Pre-configured settings: DPM++ 2M + Karras, 30 steps, Hires fix to 1200×800
+Multi-fallback repo cloning (handles Stability-AI's private repo)
+Known limitations
+Free Colab sessions last ~12 hours, then reset — save your images!
+The public URL changes every session
+T4 GPU has 15GB VRAM — keep batch size at 1 for hires images
+
+[1]
+3m
+# ============================================================
+# Cell 1: Install dependencies & clone repositories
+# Runtime: ~3-4 minutes
+# ============================================================
+
+print("=" * 60)
+print("  CELL 1: Installing dependencies & cloning repositories")
+print("=" * 60)
+
+# ── GPU check ──
+
+============================================================
+  CELL 1: Installing dependencies & cloning repositories
+============================================================
+
+🔍 GPU check:
+GPU 0: Tesla T4 (UUID: GPU-dac658ec-2146-beeb-ab2a-2e4df47ffadf)
+
+📦 Installing PyTorch + xformers...
+Found existing installation: torch 2.9.0+cu128
+Uninstalling torch-2.9.0+cu128:
+  Successfully uninstalled torch-2.9.0+cu128
+Found existing installation: torchvision 0.24.0+cu128
+Uninstalling torchvision-0.24.0+cu128:
+  Successfully uninstalled torchvision-0.24.0+cu128
+Found existing installation: torchaudio 2.9.0+cu128
+Uninstalling torchaudio-2.9.0+cu128:
+  Successfully uninstalled torchaudio-2.9.0+cu128
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 780.4/780.4 MB 2.2 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.3/7.3 MB 121.2 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.4/3.4 MB 128.6 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 23.7/23.7 MB 83.9 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 823.6/823.6 kB 61.9 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.1/14.1 MB 53.2 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 664.8/664.8 MB 2.1 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 410.6/410.6 MB 3.7 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 121.6/121.6 MB 7.8 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 56.5/56.5 MB 15.7 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 124.2/124.2 MB 7.7 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 196.0/196.0 MB 5.5 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 188.7/188.7 MB 6.0 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 99.1/99.1 kB 10.3 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 209.6/209.6 MB 5.5 MB/s eta 0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.2/6.2 MB 79.7 MB/s eta 0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 15.3/15.3 MB 105.8 MB/s eta 0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 857.3/857.3 kB 21.8 MB/s eta 0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 983.2/983.2 kB 57.2 MB/s eta 0:00:00
+
+📦 Cloning AUTOMATIC1111 WebUI...
+Cloning into '/content/stable-diffusion-webui'...
+remote: Enumerating objects: 34985, done.
+remote: Counting objects: 100% (3/3), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 34985 (delta 0), reused 0 (delta 0), pack-reused 34982 (from 2)
+Receiving objects: 100% (34985/34985), 35.68 MiB | 37.25 MiB/s, done.
+Resolving deltas: 100% (24378/24378), done.
+/content/stable-diffusion-webui
+
+🔧 Patching requirements for Python 3.12...
+  ✅ transformers version pin relaxed
+
+🔧 Pinning numpy < 2 (scikit-image compatibility)...
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.0/61.0 kB 3.7 MB/s eta 0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 18.0/18.0 MB 96.8 MB/s eta 0:00:00
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+rasterio 1.5.0 requires numpy>=2, but you have numpy 1.26.4 which is incompatible.
+opencv-python 4.13.0.92 requires numpy>=2; python_version >= "3.9", but you have numpy 1.26.4 which is incompatible.
+tobler 0.13.0 requires numpy>=2.0, but you have numpy 1.26.4 which is incompatible.
+shap 0.50.0 requires numpy>=2, but you have numpy 1.26.4 which is incompatible.
+pytensor 2.37.0 requires numpy>=2.0, but you have numpy 1.26.4 which is incompatible.
+jaxlib 0.7.2 requires numpy>=2.0, but you have numpy 1.26.4 which is incompatible.
+opencv-contrib-python 4.13.0.92 requires numpy>=2; python_version >= "3.9", but you have numpy 1.26.4 which is incompatible.
+jax 0.7.2 requires numpy>=2.0, but you have numpy 1.26.4 which is incompatible.
+opencv-python-headless 4.13.0.92 requires numpy>=2; python_version >= "3.9", but you have numpy 1.26.4 which is incompatible.
+  ✅ numpy < 2 pinned globally via PIP_CONSTRAINT
+
+📦 Installing ADetailer extension...
+Cloning into 'extensions/adetailer'...
+remote: Enumerating objects: 3126, done.
+remote: Counting objects: 100% (1027/1027), done.
+remote: Compressing objects: 100% (153/153), done.
+remote: Total 3126 (delta 957), reused 882 (delta 873), pack-reused 2099 (from 2)
+Receiving objects: 100% (3126/3126), 568.48 KiB | 15.36 MiB/s, done.
+Resolving deltas: 100% (1835/1835), done.
+  ✅ ADetailer installed (auto-detects and repaints hands/faces)
+
+📦 Pre-cloning required repositories...
+
+📦 Cloning Stable Diffusion repo...
+  Trying: https://github.com/lancedesk/stablediffusion.git
+  ✅ Stable Diffusion cloned from https://github.com/lancedesk/stablediffusion.git
+  ✅ Repo validated (ldm.modules.midas present)
+
+  📦 Installing missing 'taming' module...
+  ✅ taming-transformers symlinked
+  📝 Saved: https://github.com/lancedesk/stablediffusion.git @ cf1d67a6fd5e
+Cloning into 'repositories/generative-models'...
+remote: Enumerating objects: 1154, done.
+remote: Counting objects: 100% (560/560), done.
+remote: Compressing objects: 100% (188/188), done.
+remote: Total 1154 (delta 433), reused 372 (delta 372), pack-reused 594 (from 2)
+Receiving objects: 100% (1154/1154), 86.69 MiB | 32.34 MiB/s, done.
+Resolving deltas: 100% (602/602), done.
+Cloning into 'repositories/k-diffusion'...
+remote: Enumerating objects: 1354, done.
+remote: Counting objects: 100% (651/651), done.
+remote: Compressing objects: 100% (90/90), done.
+remote: Total 1354 (delta 607), reused 561 (delta 561), pack-reused 703 (from 3)
+Receiving objects: 100% (1354/1354), 247.27 KiB | 4.58 MiB/s, done.
+Resolving deltas: 100% (948/948), done.
+Cloning into 'repositories/CodeFormer'...
+remote: Enumerating objects: 620, done.
+remote: Counting objects: 100% (298/298), done.
+remote: Compressing objects: 100% (121/121), done.
+remote: Total 620 (delta 206), reused 177 (delta 177), pack-reused 322 (from 2)
+Receiving objects: 100% (620/620), 17.32 MiB | 49.96 MiB/s, done.
+Resolving deltas: 100% (300/300), done.
+Cloning into 'repositories/BLIP'...
+remote: Enumerating objects: 277, done.
+remote: Total 277 (delta 0), reused 0 (delta 0), pack-reused 277 (from 1)
+Receiving objects: 100% (277/277), 7.16 MiB | 8.57 MiB/s, done.
+Resolving deltas: 100% (151/151), done.
+
+============================================================
+  ✅ CELL 1 COMPLETE — Now run Cell 2
+============================================================
+
+[2]
+18s
+# ============================================================
+# Cell 2: Download Stable Diffusion 1.5 model (~4 GB)
+# Runtime: ~1-2 minutes
+# ============================================================
+
+print("=" * 60)
+print("  CELL 2: Downloading SD 1.5 model")
+print("=" * 60)
+
+!mkdir -p /content/stable-diffusion-webui/models/Stable-diffusion
+
+============================================================
+  CELL 2: Downloading SD 1.5 model
+============================================================
+--2026-02-17 10:55:30--  https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors
+Resolving huggingface.co (huggingface.co)... 3.167.112.38, 3.167.112.25, 3.167.112.96, ...
+Connecting to huggingface.co (huggingface.co)|3.167.112.38|:443... connected.
+HTTP request sent, awaiting response... 307 Temporary Redirect
+Location: /stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors [following]
+--2026-02-17 10:55:30--  https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors
+Reusing existing connection to huggingface.co:443.
+HTTP request sent, awaiting response... 302 Found
+Location: https://cas-bridge.xethub.hf.co/xet-bridge-us/66d19580e2632490a6bc5829/2ac63bfb6186057d88b65c3aa47ec90fd8d9aa3269164fc37fed1cb6f1a1efd0?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20260217%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260217T105530Z&X-Amz-Expires=3600&X-Amz-Signature=24e6ad479bf62ee8d4a6d0486c1ac700af93211b471aac38e2e8fc1b33cf5d9e&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=public&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27v1-5-pruned-emaonly.safetensors%3B+filename%3D%22v1-5-pruned-emaonly.safetensors%22%3B&x-id=GetObject&Expires=1771329330&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc3MTMyOTMzMH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82NmQxOTU4MGUyNjMyNDkwYTZiYzU4MjkvMmFjNjNiZmI2MTg2MDU3ZDg4YjY1YzNhYTQ3ZWM5MGZkOGQ5YWEzMjY5MTY0ZmMzN2ZlZDFjYjZmMWExZWZkMCoifV19&Signature=MRvW8iODtsntcTC2Z9fsR1e0JhjeLMNmTp%7EXz0RHGokSD%7EHsS-toki4wkja029fjSk4%7E8KQtRt4fLdTNKS1AZLiehnnM-cI3DMfT2UMXn6CNcJVMpSVXhMU4yJZ2A7H16jg6QHx2yTBScbwZHeaE%7EcVIPOZOHDggWdKIILdGnFz8izyDpyPDitDh0MIqakUhG-HR9eNZ81qecvCS5jnSigvwwOG8-z22AMbAOZEr1PCnO6BCDgj%7E2HK3OE23y2-X-V8L%7EVLfVH6ImB3ldrJAhp0BTilOBwU%7EbDB5AUfiiA7FP7SrdWR0Gv4tSCttE%7EJAJZRBfxqUw-Wd2pKbAyiYwg__&Key-Pair-Id=K2L8F4GPSG1IFC [following]
+--2026-02-17 10:55:30--  https://cas-bridge.xethub.hf.co/xet-bridge-us/66d19580e2632490a6bc5829/2ac63bfb6186057d88b65c3aa47ec90fd8d9aa3269164fc37fed1cb6f1a1efd0?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=cas%2F20260217%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260217T105530Z&X-Amz-Expires=3600&X-Amz-Signature=24e6ad479bf62ee8d4a6d0486c1ac700af93211b471aac38e2e8fc1b33cf5d9e&X-Amz-SignedHeaders=host&X-Xet-Cas-Uid=public&response-content-disposition=inline%3B+filename*%3DUTF-8%27%27v1-5-pruned-emaonly.safetensors%3B+filename%3D%22v1-5-pruned-emaonly.safetensors%22%3B&x-id=GetObject&Expires=1771329330&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc3MTMyOTMzMH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2FzLWJyaWRnZS54ZXRodWIuaGYuY28veGV0LWJyaWRnZS11cy82NmQxOTU4MGUyNjMyNDkwYTZiYzU4MjkvMmFjNjNiZmI2MTg2MDU3ZDg4YjY1YzNhYTQ3ZWM5MGZkOGQ5YWEzMjY5MTY0ZmMzN2ZlZDFjYjZmMWExZWZkMCoifV19&Signature=MRvW8iODtsntcTC2Z9fsR1e0JhjeLMNmTp%7EXz0RHGokSD%7EHsS-toki4wkja029fjSk4%7E8KQtRt4fLdTNKS1AZLiehnnM-cI3DMfT2UMXn6CNcJVMpSVXhMU4yJZ2A7H16jg6QHx2yTBScbwZHeaE%7EcVIPOZOHDggWdKIILdGnFz8izyDpyPDitDh0MIqakUhG-HR9eNZ81qecvCS5jnSigvwwOG8-z22AMbAOZEr1PCnO6BCDgj%7E2HK3OE23y2-X-V8L%7EVLfVH6ImB3ldrJAhp0BTilOBwU%7EbDB5AUfiiA7FP7SrdWR0Gv4tSCttE%7EJAJZRBfxqUw-Wd2pKbAyiYwg__&Key-Pair-Id=K2L8F4GPSG1IFC
+Resolving cas-bridge.xethub.hf.co (cas-bridge.xethub.hf.co)... 18.238.217.126, 18.238.217.63, 18.238.217.88, ...
+Connecting to cas-bridge.xethub.hf.co (cas-bridge.xethub.hf.co)|18.238.217.126|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 4265146304 (4.0G)
+Saving to: ‘/content/stable-diffusion-webui/models/Stable-diffusion/v1-5-pruned-emaonly.safetensors’
+
+/content/stable-dif 100%[===================>]   3.97G   239MB/s    in 18s     
+
+2026-02-17 10:55:48 (227 MB/s) - ‘/content/stable-diffusion-webui/models/Stable-diffusion/v1-5-pruned-emaonly.safetensors’ saved [4265146304/4265146304]
+
+
+============================================================
+  ✅ CELL 2 COMPLETE — Now run Cell 3
+============================================================
+
+[3]
+# ============================================================
+# Cell 3: Launch WebUI
+# Runtime: ~2-3 minutes (first launch installs remaining deps)
+# ============================================================
+
+print("=" * 60)
+print("  CELL 3: Launching Stable Diffusion WebUI")
+print("=" * 60)
+print("\n⏳ First launch takes 2-3 min (one-time package install)...")
+print("📍 A trycloudflare.com URL will appear below — open it!\n")
+
+import sys, os, json, subprocess, time, re
+
+os.chdir('/content/stable-diffusion-webui')
+
+# ── Ensure numpy < 2 constraint is active ──
+# ADetailer → ultralytics → numpy 2.x breaks scikit-image (np.float_ removed).
+# PIP_CONSTRAINT forces ALL pip installs (including launch.py's) to respect the pin.
+constraint_file = '/tmp/pip-constraints.txt'
+if not os.path.exists(constraint_file):
+    with open(constraint_file, 'w') as f:
+        f.write('numpy<2\n')
+os.environ['PIP_CONSTRAINT'] = constraint_file
+print("✅ numpy < 2 constraint active")
+
+# ── Tell launch.py to skip git operations for the SD repo ──
+# Stability-AI/stablediffusion is private. launch.py's git_clone() would
+# try to fetch from it. Setting the commit hash to match HEAD makes
+# git_clone() return immediately (hashes match → nothing to do).
+marker_file = '.sd_repo_info.json'
+if os.path.exists(marker_file):
+    info = json.load(open(marker_file))
+    os.environ['STABLE_DIFFUSION_REPO'] = info.get('url', '')
+    os.environ['STABLE_DIFFUSION_COMMIT_HASH'] = info.get('commit', '')
+    print(f"✅ SD repo: {info['url']}")
+    print(f"✅ Commit:  {info['commit'][:12]}...")
+else:
+    sd_repo = 'repositories/stable-diffusion-stability-ai'
+    if os.path.isdir(os.path.join(sd_repo, '.git')):
+        head = subprocess.run(['git', '-C', sd_repo, 'rev-parse', 'HEAD'],
+                              capture_output=True, text=True).stdout.strip()
+        os.environ['STABLE_DIFFUSION_COMMIT_HASH'] = head
+        print(f"⚠️  No marker file — using HEAD: {head[:12]}")
+    os.environ['STABLE_DIFFUSION_REPO'] = 'https://github.com/CompVis/stable-diffusion.git'
+
+if not os.path.exists('launch.py'):
+    print("❌ launch.py not found! Re-run Cell 1.")
+    sys.exit(1)
+
+# ── Pre-configure UI defaults ──
+# Writes ui-config.json so all settings are ready on first open.
+print("\n⚙️  Writing ui-config.json (pre-configured settings)...")
+
+ui_config = {
+    # Sampler (DPM++ 2M) + Schedule (Karras) — separate dropdowns in v1.10+
+    "txt2img/Sampling method/value": "DPM++ 2M",
+    "txt2img/Schedule type/value": "Karras",
+    "txt2img/Sampling steps/value": 30,
+
+    # Base resolution (3:2 aspect, SD 1.5 sweet spot)
+    "txt2img/Width/value": 768,
+    "txt2img/Height/value": 512,
+
+    # Batch
+    "txt2img/Batch count/value": 4,
+    "txt2img/Batch size/value": 1,
+
+    # CFG & seed
+    "txt2img/CFG Scale/value": 7.5,
+    "txt2img/Seed/value": -1,
+
+    # Hires fix: 768×512 → 1200×800
+    "txt2img/Hires. fix/value": True,
+    "txt2img/Upscaler/value": "R-ESRGAN 4x+",
+    "txt2img/Hires steps/value": 15,
+    "txt2img/Denoising strength/value": 0.45,
+    "txt2img/Upscale by/value": 1.0,
+    "txt2img/Resize width to/value": 1200,
+    "txt2img/Resize height to/value": 800,
+
+    # img2img
+    "img2img/Sampling method/value": "DPM++ 2M",
+    "img2img/Schedule type/value": "Karras",
+    "img2img/Sampling steps/value": 30,
+    "img2img/CFG Scale/value": 7.5,
+    "img2img/Width/value": 1200,
+    "img2img/Height/value": 800,
+
+    # ADetailer (hand/face fixer)
+    "txt2img/ADetailer/ADetailer enable/value": True,
+}
+
+ui_path = 'ui-config.json'
+if os.path.exists(ui_path):
+    existing = json.load(open(ui_path))
+    existing.update(ui_config)
+    ui_config = existing
+json.dump(ui_config, open(ui_path, 'w'), indent=2)
+
+print("  ✅ DPM++ 2M + Karras, 30 steps, CFG 7.5")
+print("  ✅ 768×512 → Hires fix → 1200×800 (R-ESRGAN 4x+)")
+print("  ✅ Batch count 4, ADetailer enabled")
+
+# ── Cloudflare Tunnel (replaces Gradio --share) ──
+print("\n📦 Setting up Cloudflare Tunnel...")
+if not os.path.exists('/usr/local/bin/cloudflared'):
+    subprocess.run(['wget', '-q',
+        'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb',
+        '-O', '/tmp/cloudflared.deb'], check=True)
+    subprocess.run(['dpkg', '-i', '/tmp/cloudflared.deb'], capture_output=True)
+    print("  ✅ cloudflared installed")
+else:
+    print("  ✅ cloudflared already installed")
+
+print("  🔗 Starting tunnel...")
+tunnel = subprocess.Popen(
+    ['cloudflared', 'tunnel', '--url', 'http://127.0.0.1:7860'],
+    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+)
+time.sleep(5)
+
+tunnel_url = None
+for _ in range(10):
+    line = tunnel.stderr.readline()
+    m = re.search(r'(https://[a-zA-Z0-9-]+\.trycloudflare\.com)', line)
+    if m:
+        tunnel_url = m.group(1)
+        break
+
+if tunnel_url:
+    print(f"\n  {'═' * 56}")
+    print(f"  🌐  PUBLIC URL: {tunnel_url}")
+    print(f"  {'═' * 56}")
+    print(f"  Open this URL once 'Model loaded' appears below.\n")
+else:
+    print("  ⚠️  URL not captured yet — look for trycloudflare.com in the logs.\n")
+
+print("🚀 Launching WebUI...\n")
+
+!python launch.py \
+  --skip-torch-cuda-test \
+  --skip-python-version-check \
+  --xformers \
+  --enable-insecure-extension-access \
+  --api \
+  --no-half-vae \
+  --gradio-queue \
+  --listen
+============================================================
+  CELL 3: Launching Stable Diffusion WebUI
+============================================================
+
+⏳ First launch takes 2-3 min (one-time package install)...
+📍 A trycloudflare.com URL will appear below — open it!
+
+✅ numpy < 2 constraint active
+✅ SD repo: https://github.com/lancedesk/stablediffusion.git
+✅ Commit:  cf1d67a6fd5e...
+
+⚙️  Writing ui-config.json (pre-configured settings)...
+  ✅ DPM++ 2M + Karras, 30 steps, CFG 7.5
+  ✅ 768×512 → Hires fix → 1200×800 (R-ESRGAN 4x+)
+  ✅ Batch count 4, ADetailer enabled
+
+📦 Setting up Cloudflare Tunnel...
+  ✅ cloudflared installed
+  🔗 Starting tunnel...
+
+  ════════════════════════════════════════════════════════
+  🌐  PUBLIC URL: https://compatible-retention-kennedy-excerpt.trycloudflare.com
+  ════════════════════════════════════════════════════════
+  Open this URL once 'Model loaded' appears below.
+
+🚀 Launching WebUI...
+
+Python 3.12.12 (main, Oct 10 2025, 08:52:57) [GCC 11.4.0]
+Version: v1.10.1
+Commit hash: 82a973c04367123ae98bd9abdf80d9eda9b910e2
+Installing clip
+Installing open_clip
+Cloning assets into /content/stable-diffusion-webui/repositories/stable-diffusion-webui-assets...
+Cloning into '/content/stable-diffusion-webui/repositories/stable-diffusion-webui-assets'...
+remote: Enumerating objects: 20, done.
+remote: Counting objects: 100% (20/20), done.
+remote: Compressing objects: 100% (18/18), done.
+remote: Total 20 (delta 0), reused 20 (delta 0), pack-reused 0 (from 0)
+Receiving objects: 100% (20/20), 132.70 KiB | 8.85 MiB/s, done.
+Fetching updates for Stable Diffusion XL...
+Checking out commit for Stable Diffusion XL with hash: 45c443b316737a4ab6e40413d7794a7f5657c19f...
+Note: switching to '45c443b316737a4ab6e40413d7794a7f5657c19f'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 45c443b Fix license-files setting for project (#71)
+Fetching updates for K-diffusion...
+Checking out commit for K-diffusion with hash: ab527a9a6d347f364e3d185ba6d714e22d80cb3c...
+Note: switching to 'ab527a9a6d347f364e3d185ba6d714e22d80cb3c'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at ab527a9 Release 0.0.16
+Fetching updates for BLIP...
+Checking out commit for BLIP with hash: 48211a1594f1321b00f14c9f7a5b4813144b2fb9...
+Note: switching to '48211a1594f1321b00f14c9f7a5b4813144b2fb9'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 48211a1 Update README.md
+Installing requirements
+Collecting ultralytics>=8.3.75
+  Downloading ultralytics-8.4.14-py3-none-any.whl.metadata (39 kB)
+Collecting mediapipe>=0.10.13
+  Downloading mediapipe-0.10.32-py3-none-manylinux_2_28_x86_64.whl.metadata (9.8 kB)
+Requirement already satisfied: numpy>=1.23.0 in /usr/local/lib/python3.12/dist-packages (from ultralytics>=8.3.75) (1.26.2)
+Requirement already satisfied: matplotlib>=3.3.0 in /usr/local/lib/python3.12/dist-packages (from ultralytics>=8.3.75) (3.10.0)
+Requirement already satisfied: opencv-python>=4.6.0 in /usr/local/lib/python3.12/dist-packages (from ultralytics>=8.3.75) (4.11.0.86)
+Requirement already satisfied: pillow>=7.1.2 in /usr/local/lib/python3.12/dist-packages (from ultralytics>=8.3.75) (9.5.0)
+Requirement already satisfied: pyyaml>=5.3.1 in /usr/local/lib/python3.12/dist-packages (from ultralytics>=8.3.75) (6.0.3)
+Requirement already satisfied: requests>=2.23.0 in /usr/local/lib/python3.12/dist-packages (from ultralytics>=8.3.75) (2.32.4)
+Requirement already satisfied: scipy>=1.4.1 in /usr/local/lib/python3.12/dist-packages (from ultralytics>=8.3.75) (1.16.3)
+Requirement already satisfied: torch>=1.8.0 in /usr/local/lib/python3.12/dist-packages (from ultralytics>=8.3.75) (2.5.1+cu121)
+Requirement already satisfied: torchvision>=0.9.0 in /usr/local/lib/python3.12/dist-packages (from ultralytics>=8.3.75) (0.20.1+cu121)
+Requirement already satisfied: psutil>=5.8.0 in /usr/local/lib/python3.12/dist-packages (from ultralytics>=8.3.75) (5.9.5)
+Requirement already satisfied: polars>=0.20.0 in /usr/local/lib/python3.12/dist-packages (from ultralytics>=8.3.75) (1.31.0)
+Collecting ultralytics-thop>=2.0.18 (from ultralytics>=8.3.75)
+  Downloading ultralytics_thop-2.0.18-py3-none-any.whl.metadata (14 kB)
+Collecting absl-py~=2.3 (from mediapipe>=0.10.13)
+  Downloading absl_py-2.4.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting sounddevice~=0.5 (from mediapipe>=0.10.13)
+  Downloading sounddevice-0.5.5-py3-none-any.whl.metadata (1.4 kB)
+Requirement already satisfied: flatbuffers~=25.9 in /usr/local/lib/python3.12/dist-packages (from mediapipe>=0.10.13) (25.12.19)
+Requirement already satisfied: opencv-contrib-python in /usr/local/lib/python3.12/dist-packages (from mediapipe>=0.10.13) (4.13.0.92)
+Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.3.0->ultralytics>=8.3.75) (1.3.3)
+Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.3.0->ultralytics>=8.3.75) (0.12.1)
+Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.3.0->ultralytics>=8.3.75) (4.61.1)
+Requirement already satisfied: kiwisolver>=1.3.1 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.3.0->ultralytics>=8.3.75) (1.4.9)
+Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.3.0->ultralytics>=8.3.75) (26.0)
+Requirement already satisfied: pyparsing>=2.3.1 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.3.0->ultralytics>=8.3.75) (3.3.2)
+Requirement already satisfied: python-dateutil>=2.7 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.3.0->ultralytics>=8.3.75) (2.9.0.post0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.12/dist-packages (from requests>=2.23.0->ultralytics>=8.3.75) (3.4.4)
+Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.12/dist-packages (from requests>=2.23.0->ultralytics>=8.3.75) (3.11)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.12/dist-packages (from requests>=2.23.0->ultralytics>=8.3.75) (2.5.0)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.12/dist-packages (from requests>=2.23.0->ultralytics>=8.3.75) (2026.1.4)
+Requirement already satisfied: cffi in /usr/local/lib/python3.12/dist-packages (from sounddevice~=0.5->mediapipe>=0.10.13) (2.0.0)
+Requirement already satisfied: filelock in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (3.20.3)
+Requirement already satisfied: typing-extensions>=4.8.0 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (4.15.0)
+Requirement already satisfied: networkx in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (3.6.1)
+Requirement already satisfied: jinja2 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (3.1.6)
+Requirement already satisfied: fsspec in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (2025.3.0)
+Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.1.105 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (12.1.105)
+Requirement already satisfied: nvidia-cuda-runtime-cu12==12.1.105 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (12.1.105)
+Requirement already satisfied: nvidia-cuda-cupti-cu12==12.1.105 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (12.1.105)
+Requirement already satisfied: nvidia-cudnn-cu12==9.1.0.70 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (9.1.0.70)
+Requirement already satisfied: nvidia-cublas-cu12==12.1.3.1 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (12.1.3.1)
+Requirement already satisfied: nvidia-cufft-cu12==11.0.2.54 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (11.0.2.54)
+Requirement already satisfied: nvidia-curand-cu12==10.3.2.106 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (10.3.2.106)
+Requirement already satisfied: nvidia-cusolver-cu12==11.4.5.107 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (11.4.5.107)
+Requirement already satisfied: nvidia-cusparse-cu12==12.1.0.106 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (12.1.0.106)
+Requirement already satisfied: nvidia-nccl-cu12==2.21.5 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (2.21.5)
+Requirement already satisfied: nvidia-nvtx-cu12==12.1.105 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (12.1.105)
+Requirement already satisfied: triton==3.1.0 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (3.1.0)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (69.5.1)
+Requirement already satisfied: sympy==1.13.1 in /usr/local/lib/python3.12/dist-packages (from torch>=1.8.0->ultralytics>=8.3.75) (1.13.1)
+Requirement already satisfied: nvidia-nvjitlink-cu12 in /usr/local/lib/python3.12/dist-packages (from nvidia-cusolver-cu12==11.4.5.107->torch>=1.8.0->ultralytics>=8.3.75) (12.8.93)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in /usr/local/lib/python3.12/dist-packages (from sympy==1.13.1->torch>=1.8.0->ultralytics>=8.3.75) (1.3.0)
+INFO: pip is looking at multiple versions of opencv-contrib-python to determine which version is compatible with other requirements. This could take a while.
+Collecting opencv-contrib-python (from mediapipe>=0.10.13)
+  Downloading opencv_contrib_python-4.13.0.90-cp37-abi3-manylinux_2_28_x86_64.whl.metadata (19 kB)
+  Downloading opencv_contrib_python-4.12.0.88-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (19 kB)
+  Downloading opencv_contrib_python-4.11.0.86-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (20 kB)
+Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.12/dist-packages (from python-dateutil>=2.7->matplotlib>=3.3.0->ultralytics>=8.3.75) (1.17.0)
+Requirement already satisfied: pycparser in /usr/local/lib/python3.12/dist-packages (from cffi->sounddevice~=0.5->mediapipe>=0.10.13) (3.0)
+Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.12/dist-packages (from jinja2->torch>=1.8.0->ultralytics>=8.3.75) (2.1.5)
+Downloading ultralytics-8.4.14-py3-none-any.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 34.4 MB/s eta 0:00:00
+Downloading mediapipe-0.10.32-py3-none-manylinux_2_28_x86_64.whl (10.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.3/10.3 MB 126.2 MB/s eta 0:00:00
+Downloading absl_py-2.4.0-py3-none-any.whl (135 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 135.8/135.8 kB 16.6 MB/s eta 0:00:00
+Downloading sounddevice-0.5.5-py3-none-any.whl (32 kB)
+Downloading ultralytics_thop-2.0.18-py3-none-any.whl (28 kB)
+Downloading opencv_contrib_python-4.11.0.86-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (69.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 69.1/69.1 MB 16.5 MB/s eta 0:00:00
+Installing collected packages: opencv-contrib-python, absl-py, sounddevice, mediapipe, ultralytics-thop, ultralytics
+  Attempting uninstall: opencv-contrib-python
+    Found existing installation: opencv-contrib-python 4.13.0.92
+    Uninstalling opencv-contrib-python-4.13.0.92:
+      Successfully uninstalled opencv-contrib-python-4.13.0.92
+  Attempting uninstall: absl-py
+    Found existing installation: absl-py 1.4.0
+    Uninstalling absl-py-1.4.0:
+      Successfully uninstalled absl-py-1.4.0
+Successfully installed absl-py-2.4.0 mediapipe-0.10.32 opencv-contrib-python-4.11.0.86 sounddevice-0.5.5 ultralytics-8.4.14 ultralytics-thop-2.0.18
+Launching Web UI with arguments: --skip-torch-cuda-test --skip-python-version-check --xformers --enable-insecure-extension-access --api --no-half-vae --gradio-queue --listen
+2026-02-17 11:06:40.555808: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1771326400.810901    2227 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1771326400.882140    2227 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1771326401.428571    2227 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771326401.428626    2227 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771326401.428635    2227 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771326401.428643    2227 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2026-02-17 11:06:41.485136: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+/usr/local/lib/python3.12/dist-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+/content/stable-diffusion-webui/modules/prompt_parser.py:377: SyntaxWarning: invalid escape sequence '\('
+  \( - literal character '('
+/content/stable-diffusion-webui/modules/models/diffusion/uni_pc/uni_pc.py:52: SyntaxWarning: invalid escape sequence '\h'
+  The `alphas_cumprod` is the \hat{alpha_n} arrays in the notations of DDPM. Specifically, DDPMs assume that
+/content/stable-diffusion-webui/modules/infotext_utils.py:19: SyntaxWarning: invalid escape sequence '\('
+  re_hypernet_hash = re.compile("\(([0-9a-f]+)\)$")
+person_yolov8n-seg.pt:   0% 0.00/6.78M [00:00<?, ?B/s]
+
+face_yolov8s.pt:   0% 0.00/22.5M [00:00<?, ?B/s]
+person_yolov8s-seg.pt:   0% 0.00/23.9M [00:00<?, ?B/s]
+
+
+hand_yolov8n.pt:   0% 0.00/6.24M [00:00<?, ?B/s]
+
+
+
+face_yolov8n.pt:   0% 0.00/6.23M [00:00<?, ?B/s]
+
+
+
+
+yolov8x-worldv2.pt:   0% 0.00/146M [00:00<?, ?B/s]
+
+
+
+face_yolov8n.pt: 100% 6.23M/6.23M [00:00<00:00, 12.2MB/s]
+
+
+
+hand_yolov8n.pt: 100% 6.24M/6.24M [00:00<00:00, 11.7MB/s]
+person_yolov8n-seg.pt: 100% 6.78M/6.78M [00:00<00:00, 11.5MB/s]
+
+
+face_yolov8s.pt: 100% 22.5M/22.5M [00:00<00:00, 31.1MB/s]
+face_yolov8s.pt: 100% 22.5M/22.5M [00:00<00:00, 30.9MB/s]
+person_yolov8s-seg.pt: 100% 23.9M/23.9M [00:00<00:00, 32.7MB/s]
+
+
+
+
+
+yolov8x-worldv2.pt:   8% 12.2M/146M [00:00<00:09, 14.4MB/s]
+
+
+
+
+yolov8x-worldv2.pt:  54% 79.4M/146M [00:01<00:00, 78.9MB/s]
+
+
+
+
+yolov8x-worldv2.pt: 100% 146M/146M [00:01<00:00, 108MB/s]
+[-] ADetailer initialized. version: 26.2.0, num models: 10
+Calculating sha256 for /content/stable-diffusion-webui/models/Stable-diffusion/v1-5-pruned-emaonly.safetensors: Running on local URL:  http://0.0.0.0:7860
+
+To create a public link, set `share=True` in `launch()`.
+Startup time: 658.6s (prepare environment: 624.1s, import torch: 12.2s, import gradio: 5.7s, setup paths: 11.0s, initialize shared: 0.5s, other imports: 0.5s, load scripts: 2.6s, create ui: 1.0s, gradio launch: 0.4s, add APIs: 0.5s).
+6ce0161689b3853acaa03779ec93eafe75a02f4ced659bee03f50797806fa2fa
+Loading weights [6ce0161689] from /content/stable-diffusion-webui/models/Stable-diffusion/v1-5-pruned-emaonly.safetensors
+Creating model from config: /content/stable-diffusion-webui/configs/v1-inference.yaml
+tokenizer_config.json: 100% 905/905 [00:00<00:00, 6.21MB/s]
+vocab.json: 961kB [00:00, 1.05MB/s]
+merges.txt: 525kB [00:00, 2.89MB/s]
+special_tokens_map.json: 100% 389/389 [00:00<00:00, 3.53MB/s]
+tokenizer.json: 2.22MB [00:00, 7.08MB/s]
+creating model quickly: OSError
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_http.py", line 403, in hf_raise_for_status
+    response.raise_for_status()
+  File "/usr/local/lib/python3.12/dist-packages/requests/models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://huggingface.co/None/resolve/main/config.json
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 342, in cached_file
+    resolved_file = hf_hub_download(
+                    ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1014, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1121, in _hf_hub_download_to_cache_dir
+    _raise_on_head_call_error(head_call_error, force_download, local_files_only)
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1662, in _raise_on_head_call_error
+    raise head_call_error
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1550, in _get_metadata_or_catch_error
+    metadata = get_hf_file_metadata(
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1467, in get_hf_file_metadata
+    r = _request_wrapper(
+        ^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 283, in _request_wrapper
+    response = _request_wrapper(
+               ^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 307, in _request_wrapper
+    hf_raise_for_status(response)
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_http.py", line 453, in hf_raise_for_status
+    raise _format(RepositoryNotFoundError, message, response) from e
+huggingface_hub.errors.RepositoryNotFoundError: 401 Client Error. (Request ID: Root=1-69944be3-4b8c556520ce456e6894f162;5c3533ef-f0e7-41c1-8467-22e3a9816c30)
+
+Repository Not Found for url: https://huggingface.co/None/resolve/main/config.json.
+Please make sure you specified the correct `repo_id` and `repo_type`.
+If you are trying to access a private or gated repo, make sure you are authenticated. For more details, see https://huggingface.co/docs/huggingface_hub/authentication
+Invalid username or password.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/threading.py", line 1032, in _bootstrap
+    self._bootstrap_inner()
+  File "/usr/lib/python3.12/threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.12/threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "/content/stable-diffusion-webui/modules/initialize.py", line 149, in load_model
+    shared.sd_model  # noqa: B018
+  File "/content/stable-diffusion-webui/modules/shared_items.py", line 175, in sd_model
+    return modules.sd_models.model_data.get_sd_model()
+  File "/content/stable-diffusion-webui/modules/sd_models.py", line 693, in get_sd_model
+    load_model()
+  File "/content/stable-diffusion-webui/modules/sd_models.py", line 820, in load_model
+    sd_model = instantiate_from_config(sd_config.model, state_dict)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/stable-diffusion-webui/modules/sd_models.py", line 775, in instantiate_from_config
+    return constructor(**params)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/content/stable-diffusion-webui/repositories/stable-diffusion-stability-ai/ldm/models/diffusion/ddpm.py", line 563, in __init__
+    self.instantiate_cond_stage(cond_stage_config)
+  File "/content/stable-diffusion-webui/repositories/stable-diffusion-stability-ai/ldm/models/diffusion/ddpm.py", line 630, in instantiate_cond_stage
+    model = instantiate_from_config(config)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/stable-diffusion-webui/repositories/stable-diffusion-stability-ai/ldm/util.py", line 89, in instantiate_from_config
+    return get_obj_from_str(config["target"])(**config.get("params", dict()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/stable-diffusion-webui/repositories/stable-diffusion-stability-ai/ldm/modules/encoders/modules.py", line 104, in __init__
+    self.transformer = CLIPTextModel.from_pretrained(version)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/content/stable-diffusion-webui/modules/sd_disable_initialization.py", line 68, in CLIPTextModel_from_pretrained
+    res = self.CLIPTextModel_from_pretrained(None, *model_args, config=pretrained_model_name_or_path, state_dict={}, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/transformers/modeling_utils.py", line 262, in _wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/transformers/modeling_utils.py", line 3540, in from_pretrained
+    resolved_config_file = cached_file(
+                           ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 365, in cached_file
+    raise EnvironmentError(
+OSError: None is not a local folder and is not a valid model identifier listed on 'https://huggingface.co/models'
+If this is a private repository, make sure to pass a token having permission to this repo either by logging in with `huggingface-cli login` or by passing `token=<your_token>`
+
+Failed to create model quickly; will retry using slow method.
+config.json: 4.52kB [00:00, 18.0MB/s]
+model.safetensors: 100% 1.71G/1.71G [00:17<00:00, 97.9MB/s]
+Applying attention optimization: xformers... done.
+Model loaded in 61.3s (calculate hash: 19.2s, create model: 21.3s, apply weights to model: 19.8s, apply half(): 0.2s, load textual inversion embeddings: 0.1s, calculate empty prompt: 0.6s).
+
+Total progress: 0it [00:00, ?it/s]/content/stable-diffusion-webui/modules/safe.py:156: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return unsafe_torch_load(filename, *args, **kwargs)
+  0% 0/20 [00:00<?, ?it/s]
+  5% 1/20 [00:00<00:18,  1.01it/s]
+Total progress:   1% 2/140 [00:01<01:10,  1.95it/s]
+ 15% 3/20 [00:01<00:06,  2.65it/s]
+ 20% 4/20 [00:01<00:05,  2.98it/s]
+ 25% 5/20 [00:01<00:04,  3.24it/s]
+ 30% 6/20 [00:02<00:04,  3.44it/s]
+ 35% 7/20 [00:02<00:03,  3.59it/s]
+ 40% 8/20 [00:02<00:03,  3.69it/s]
+ 45% 9/20 [00:02<00:02,  3.76it/s]
+ 50% 10/20 [00:03<00:02,  3.83it/s]
+ 55% 11/20 [00:03<00:02,  3.89it/s]
+ 60% 12/20 [00:03<00:02,  3.89it/s]
+ 65% 13/20 [00:03<00:01,  3.87it/s]
+ 70% 14/20 [00:04<00:01,  3.90it/s]
+ 75% 15/20 [00:04<00:01,  3.32it/s]
+ 80% 16/20 [00:04<00:00,  4.14it/s]
+ 85% 17/20 [00:04<00:00,  4.08it/s]
+ 90% 18/20 [00:05<00:00,  4.03it/s]
+ 95% 19/20 [00:05<00:00,  4.00it/s]
+100% 20/20 [00:05<00:00,  3.55it/s]
+Downloading: "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth" to /content/stable-diffusion-webui/models/RealESRGAN/RealESRGAN_x4plus.pth
+
+100% 63.9M/63.9M [00:00<00:00, 369MB/s]
+tiled upscale: 100% 15/15 [00:03<00:00,  4.70it/s]
+  0% 0/15 [00:00<?, ?it/s]
+  7% 1/15 [00:00<00:04,  3.19it/s]
+ 13% 2/15 [00:01<00:08,  1.54it/s]
+ 20% 3/15 [00:02<00:09,  1.31it/s]
+ 27% 4/15 [00:03<00:09,  1.22it/s]
+ 33% 5/15 [00:03<00:08,  1.18it/s]
+ 40% 6/15 [00:04<00:07,  1.16it/s]
+ 47% 7/15 [00:05<00:07,  1.14it/s]
+ 53% 8/15 [00:06<00:06,  1.13it/s]
+ 60% 9/15 [00:07<00:05,  1.12it/s]
+ 67% 10/15 [00:08<00:04,  1.11it/s]
+ 73% 11/15 [00:09<00:03,  1.11it/s]
+ 80% 12/15 [00:10<00:02,  1.04it/s]
+ 87% 13/15 [00:11<00:01,  1.12it/s]
+ 93% 14/15 [00:12<00:00,  1.11it/s]
+100% 15/15 [00:13<00:00,  1.15it/s]
+  0% 0/20 [00:00<?, ?it/s]
+Total progress:  26% 36/140 [00:28<02:45,  1.59s/it]
+ 10% 2/20 [00:00<00:03,  5.76it/s]
+ 15% 3/20 [00:00<00:03,  4.74it/s]
+ 20% 4/20 [00:00<00:03,  4.33it/s]
+ 25% 5/20 [00:01<00:03,  4.12it/s]
+ 30% 6/20 [00:01<00:03,  3.98it/s]
+ 35% 7/20 [00:01<00:03,  3.88it/s]
+ 40% 8/20 [00:01<00:03,  3.85it/s]
+ 45% 9/20 [00:02<00:02,  3.82it/s]
+ 50% 10/20 [00:02<00:02,  3.79it/s]
+ 55% 11/20 [00:02<00:02,  3.76it/s]
+ 60% 12/20 [00:03<00:02,  3.75it/s]
+ 65% 13/20 [00:03<00:01,  3.75it/s]
+ 70% 14/20 [00:03<00:01,  3.73it/s]
+ 75% 15/20 [00:03<00:01,  3.52it/s]
+ 80% 16/20 [00:04<00:01,  3.79it/s]
+ 85% 17/20 [00:04<00:00,  3.76it/s]
+ 90% 18/20 [00:04<00:00,  3.74it/s]
+ 95% 19/20 [00:04<00:00,  3.73it/s]
+100% 20/20 [00:05<00:00,  3.87it/s]
+tiled upscale: 100% 15/15 [00:03<00:00,  4.55it/s]
+  0% 0/15 [00:00<?, ?it/s]
+  7% 1/15 [00:00<00:04,  3.07it/s]
+ 13% 2/15 [00:01<00:08,  1.45it/s]
+ 20% 3/15 [00:02<00:09,  1.23it/s]
+ 27% 4/15 [00:03<00:09,  1.15it/s]
+ 33% 5/15 [00:04<00:08,  1.11it/s]
+ 40% 6/15 [00:05<00:08,  1.09it/s]
+ 47% 7/15 [00:06<00:07,  1.08it/s]
+ 53% 8/15 [00:06<00:06,  1.07it/s]
+ 60% 9/15 [00:07<00:05,  1.06it/s]
+ 67% 10/15 [00:08<00:04,  1.06it/s]
+ 73% 11/15 [00:09<00:03,  1.05it/s]
+ 80% 12/15 [00:10<00:02,  1.02it/s]
+ 87% 13/15 [00:11<00:01,  1.05it/s]
+ 93% 14/15 [00:12<00:00,  1.04it/s]
+100% 15/15 [00:13<00:00,  1.09it/s]
+  0% 0/20 [00:00<?, ?it/s]
+Total progress:  51% 71/140 [00:56<01:57,  1.70s/it]
+ 10% 2/20 [00:00<00:03,  5.37it/s]
+ 15% 3/20 [00:00<00:03,  4.39it/s]
+ 20% 4/20 [00:00<00:04,  3.99it/s]
+ 25% 5/20 [00:01<00:03,  3.81it/s]
+ 30% 6/20 [00:01<00:03,  3.69it/s]
+ 35% 7/20 [00:01<00:03,  3.62it/s]
+ 40% 8/20 [00:02<00:03,  3.56it/s]
+ 45% 9/20 [00:02<00:03,  3.54it/s]
+ 50% 10/20 [00:02<00:02,  3.52it/s]
+ 55% 11/20 [00:02<00:02,  3.50it/s]
+ 60% 12/20 [00:03<00:02,  3.36it/s]
+ 65% 13/20 [00:03<00:01,  3.52it/s]
+ 70% 14/20 [00:03<00:01,  3.51it/s]
+ 75% 15/20 [00:04<00:01,  3.49it/s]
+ 80% 16/20 [00:04<00:01,  3.48it/s]
+ 85% 17/20 [00:04<00:00,  3.48it/s]
+ 90% 18/20 [00:04<00:00,  3.47it/s]
+ 95% 19/20 [00:05<00:00,  3.45it/s]
+100% 20/20 [00:05<00:00,  3.59it/s]
+tiled upscale: 100% 15/15 [00:03<00:00,  4.25it/s]
+  0% 0/15 [00:00<?, ?it/s]
+  7% 1/15 [00:00<00:05,  2.79it/s]
+ 13% 2/15 [00:01<00:09,  1.34it/s]
+ 20% 3/15 [00:02<00:10,  1.14it/s]
+ 27% 4/15 [00:03<00:10,  1.07it/s]
+ 33% 5/15 [00:04<00:09,  1.03it/s]
+ 40% 6/15 [00:05<00:08,  1.01it/s]
+ 47% 7/15 [00:06<00:08,  1.00s/it]
+ 53% 8/15 [00:07<00:07,  1.02s/it]
+ 60% 9/15 [00:08<00:06,  1.02s/it]
+ 67% 10/15 [00:09<00:05,  1.02s/it]
+ 73% 11/15 [00:10<00:04,  1.03s/it]
+ 80% 12/15 [00:11<00:03,  1.11s/it]
+ 87% 13/15 [00:12<00:02,  1.01s/it]
+ 93% 14/15 [00:13<00:01,  1.01s/it]
+100% 15/15 [00:14<00:00,  1.02it/s]
+  0% 0/20 [00:00<?, ?it/s]
+Total progress:  76% 106/140 [01:25<00:58,  1.72s/it]
+ 10% 2/20 [00:00<00:03,  5.28it/s]
+ 15% 3/20 [00:00<00:03,  4.34it/s]
+ 20% 4/20 [00:00<00:04,  3.96it/s]
+ 25% 5/20 [00:01<00:03,  3.77it/s]
+ 30% 6/20 [00:01<00:03,  3.65it/s]
+ 35% 7/20 [00:01<00:03,  3.58it/s]
+ 40% 8/20 [00:02<00:03,  3.54it/s]
+ 45% 9/20 [00:02<00:03,  3.52it/s]
+ 50% 10/20 [00:02<00:02,  3.52it/s]
+ 55% 11/20 [00:02<00:02,  3.50it/s]
+ 60% 12/20 [00:03<00:02,  3.48it/s]
+ 65% 13/20 [00:03<00:02,  3.48it/s]
+ 70% 14/20 [00:03<00:01,  3.47it/s]
+ 75% 15/20 [00:04<00:01,  3.46it/s]
+ 80% 16/20 [00:04<00:01,  3.08it/s]
+ 85% 17/20 [00:04<00:00,  3.62it/s]
+ 90% 18/20 [00:04<00:00,  3.57it/s]
+ 95% 19/20 [00:05<00:00,  3.53it/s]
+100% 20/20 [00:05<00:00,  3.59it/s]
+tiled upscale: 100% 15/15 [00:03<00:00,  4.44it/s]
+  0% 0/15 [00:00<?, ?it/s]
+  7% 1/15 [00:00<00:04,  2.94it/s]
+ 13% 2/15 [00:01<00:09,  1.41it/s]
+ 20% 3/15 [00:02<00:09,  1.21it/s]
+ 27% 4/15 [00:03<00:09,  1.13it/s]
+ 33% 5/15 [00:04<00:09,  1.09it/s]
+ 40% 6/15 [00:05<00:08,  1.07it/s]
+ 47% 7/15 [00:06<00:07,  1.06it/s]
+ 53% 8/15 [00:07<00:06,  1.05it/s]
+ 60% 9/15 [00:08<00:05,  1.04it/s]
+ 67% 10/15 [00:09<00:04,  1.04it/s]
+ 73% 11/15 [00:10<00:03,  1.04it/s]
+ 80% 12/15 [00:11<00:02,  1.01it/s]
+ 87% 13/15 [00:11<00:01,  1.05it/s]
+ 93% 14/15 [00:12<00:00,  1.05it/s]
+100% 15/15 [00:13<00:00,  1.08it/s]
+
+Total progress: 100% 140/140 [01:55<00:00,  1.21it/s]
+Usage
+Once the WebUI opens:
+
+Paste a prompt — e.g. beautiful mountain landscape at sunset, cinematic lighting, 8k, detailed
+Paste a negative prompt — e.g. blurry, low quality, bad hands, extra fingers, fused fingers, bad anatomy, deformed
+Click Generate — settings are pre-configured, 4 images will be generated
+Right-click → Save your favorites
+Pre-configured settings
+Setting	Value
+Sampler	DPM++ 2M
+Schedule	Karras
+Steps	30
+CFG Scale	7.5
+Base size	768 × 512
+Hires fix	✅ → 1200 × 800
+Upscaler	R-ESRGAN 4x+
+Batch count	4
+ADetailer	✅ (hands & faces)
+ADetailer (fixing hands & faces)
+ADetailer is pre-installed and auto-enabled. It detects hands/faces after generation and repaints them at higher detail.
+
+Scroll below the main settings to find the ADetailer section
+hand_yolov8n.pt — auto-fixes hands
+face_yolov8n.pt — auto-fixes faces (add as 2nd model if needed)
+Strengthen with negative prompt: bad hands, extra fingers, fused fingers, too many fingers, missing fingers, malformed hands
+Strengthen with positive prompt: detailed hands, correct finger anatomy, five fingers
+Generation speed (T4 GPU)
+Time
+First image (compilation)	~30-60 sec
+Subsequent (512×512)	~10-15 sec
+Subsequent (768→1200 hires)	~30-45 sec
+Optional: Download More Models
+Run the cell below to switch models (DreamShaper, Realistic Vision, Anything V5).
+
+
+[ ]
+# ============================================================
+# Cell 4 (Optional): Download additional models
+# Uncomment ONE model and run this cell
+# ============================================================
+
+# DreamShaper 8 — artistic, versatile
+# !wget -c https://civitai.com/api/download/models/128713 \
+#   -O /content/stable-diffusion-webui/models/Stable-diffusion/dreamshaper_8.safetensors
+
+# Realistic Vision V6 — photorealistic
+# !wget -c https://civitai.com/api/download/models/245598 \
+#   -O /content/stable-diffusion-webui/models/Stable-diffusion/realisticVision_v60B1.safetensors
+
+# Anything V5 — anime style
+# !wget -c https://civitai.com/api/download/models/30163 \
+#   -O /content/stable-diffusion-webui/models/Stable-diffusion/anything-v5.safetensors
+
+print("Uncomment a model above, then run this cell.")
+print("After download, refresh the WebUI and select the model from the top-left dropdown.")
+Troubleshooting
+Problem	Fix
+"fatal: could not read Username"	Stability-AI repo is private — Cell 1 handles this with fallback URLs. If all fail, find a public fork at Stability-AI/stablediffusion/forks and add it to the URL list.
+PyTorch version conflicts	Cell 1 uninstalls old versions first. Factory reset runtime if persists.
+"INCOMPATIBLE PYTHON VERSION"	Ignore — --skip-python-version-check handles this.
+"Out of memory"	Reduce to 512×512, batch size 1, or disable Hires fix. Factory reset runtime.
+"Model not found"	Re-run Cell 2. Verify file is ~4 GB.
+WebUI won't load	Ensure T4 GPU is enabled. Factory reset runtime → re-run all cells.
+Slow first image	Normal — first generation compiles kernels (~30-60 sec). Subsequent images are faster.
+Distorted hands/faces	ADetailer should auto-fix. Check it's enabled below the main settings. Add hand terms to negative prompt.
+Tunnel URL not showing	Look in the Cell 3 output logs for trycloudflare.com.
+Full reset procedure
+Runtime → Factory reset runtime
+Runtime → Change runtime type → T4 GPU → Save
+Run Cell 1 → Cell 2 → Cell 3
+API usage
+The --api flag enables REST endpoints. Once the WebUI is running:
+
+import requests, base64, json
+from PIL import Image
+from io import BytesIO
+
+url = "https://your-url.trycloudflare.com/sdapi/v1/txt2img"
+payload = {
+    "prompt": "mountain landscape, sunset, 8k",
+    "negative_prompt": "blurry, low quality",
+    "steps": 30,
+    "cfg_scale": 7.5,
+    "width": 768,
+    "height": 512,
+}
+r = requests.post(url, json=payload).json()
+img = Image.open(BytesIO(base64.b64decode(r["images"][0])))
+img.save("output.png")
+Full API docs available at https://your-url.trycloudflare.com/docs
+
+Resources
+AUTOMATIC1111 Wiki
+ADetailer — hand & face fixer
+Civitai — thousands of free models & LoRAs
+r/StableDiffusion — tips & community
+Made with ❤️ — Star the repo if this saved you time!
+
+Colab paid products - Cancel contracts here

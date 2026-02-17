@@ -8,7 +8,7 @@ Run [AUTOMATIC1111's Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/st
 
 ## Features
 
-- **Realistic Vision V6** — photorealistic model out of the box (not the weak SD 1.5 base)
+- **Realistic Vision V6** — photorealistic model out of the box
 - **One-click setup** — 3 cells, ~6 minutes, zero configuration
 - **Pre-configured settings** — DPM++ SDE + Karras, 30 steps, CFG 5, Hires fix (768×512 → 1200×800)
 - **ADetailer** — auto-fixes distorted hands & faces after every generation
@@ -19,12 +19,10 @@ Run [AUTOMATIC1111's Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/st
 
 ## Quick Start
 
-1. Click the **Open in Colab** badge above (or upload `stable_diffusion_colab.ipynb` to [Google Colab](https://colab.research.google.com/))
-2. **Enable GPU**: Runtime → Change runtime type → **T4 GPU** → Save
-3. **Run Cell 1** — installs dependencies, clones repos, adds ADetailer (~3-4 min)
-4. **Run Cell 2** — downloads Realistic Vision V6 model (~2 min)
-5. **Run Cell 3** — launches WebUI with pre-configured settings (~1-2 min)
-6. **Click the `trycloudflare.com` URL** → paste a prompt → Generate!
+1. Click the **Open in Colab** badge above, or go to [Google Colab](https://colab.research.google.com/) → **File → Upload notebook** → select `stable_diffusion_colab.ipynb`
+2. **Runtime → Change runtime type** → Runtime type: **Python 3**, Hardware accelerator: **T4 GPU** → **Save**
+3. **Runtime → Run all** — sit back for ~6 minutes while it installs, downloads the model, and launches
+4. **Click the `trycloudflare.com` URL** that appears in the Cell 3 output → paste a prompt → Generate!
 
 ## Pre-configured Defaults
 
